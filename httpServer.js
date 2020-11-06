@@ -2,7 +2,8 @@ const Koa = require('koa');
 const app = new Koa();
 
 const Router = require('koa-router');
-const homeRouter = new Router();
+const moteRouter = new Router();
+const apiRouter = new Router();
 
 const bodyParser = require('koa-bodyparser');
 app.use(bodyParser());
@@ -13,21 +14,24 @@ const staticPath = './static';
 
 app.use(static(path.join(__dirname, staticPath)));
 
-homeRouter
-    .get('./', async (ctx) => {})
-    .get('/echo', async (ctx) => {
-        ctx.body = ctx.req.body;
-    })
+let step;
+moteRouter
     .get('/cmd', async (ctx) => {
-        console.log(ctx.request.host);
-        console.log('heya------------------------');
-        console.log(ctx.request.url);
-        console.log('heya------------------------');
         console.log(JSON.stringify(ctx.request.query));
         ctx.body = ctx.request.query;
+        step = ctx.request.query.step;
+    })
+    .get('/cmd/reset', async (ctx) => {
+        step = 0;
     });
 
-app.use(homeRouter.routes()).use(homeRouter.allowedMethods());
+app.use(moteRouter.routes()).use(moteRouter.allowedMethods());
+// control panel
+apiRouter.get('/api/step', async (ctx) => {
+    ctx.body = { step };
+});
+
+app.use(apiRouter.routes()).use(apiRouter.allowedMethods());
 
 app.use(async (ctx) => {
     ctx.body = 'Hello, http service on going...';
